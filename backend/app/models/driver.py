@@ -1,17 +1,11 @@
-import enum
 import uuid
 from datetime import date
 from typing import List, Optional
-from sqlalchemy import Date, Enum, ForeignKey, String
+from sqlalchemy import Date, Enum as SQLEnum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base, TimestampMixin
-
-class DriverStatus(str, enum.Enum):
-    ACTIVE = "ACTIVE"
-    ON_TRIP = "ON_TRIP"
-    INACTIVE = "INACTIVE"
-    SUSPENDED = "SUSPENDED"
+from app.core.enums import DriverStatus, LicenseCategory
 
 class Driver(Base, TimestampMixin):
     __tablename__ = "drivers"
@@ -27,18 +21,35 @@ class Driver(Base, TimestampMixin):
         unique=True,
         nullable=True
     )
+    full_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
     license_number: Mapped[str] = mapped_column(
         String(50),
         unique=True,
+        nullable=False,
+        index=True
+    )
+    license_category: Mapped[LicenseCategory] = mapped_column(
+        SQLEnum(LicenseCategory, name="licensecategory_enum"),
         nullable=False
     )
-    license_expiry: Mapped[date] = mapped_column(
+    license_expiry_date: Mapped[date] = mapped_column(
         Date(),
         nullable=False,
         index=True
     )
+    contact_number: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False
+    )
+    safety_score: Mapped[int] = mapped_column(
+        Integer(),
+        nullable=False
+    )
     status: Mapped[DriverStatus] = mapped_column(
-        Enum(DriverStatus, name="driverstatus"),
+        SQLEnum(DriverStatus, name="driverstatus_enum"),
         nullable=False,
         index=True
     )

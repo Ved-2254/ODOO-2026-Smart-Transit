@@ -1,22 +1,11 @@
-import enum
 import uuid
+from decimal import Decimal
 from typing import List
-from sqlalchemy import CheckConstraint, Enum, Float, Integer, String
+from sqlalchemy import Float, Numeric, String, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base, TimestampMixin
-
-class VehicleStatus(str, enum.Enum):
-    ACTIVE = "ACTIVE"
-    IN_MAINTENANCE = "IN_MAINTENANCE"
-    OUT_OF_SERVICE = "OUT_OF_SERVICE"
-
-class VehicleType(str, enum.Enum):
-    TRUCK = "TRUCK"
-    VAN = "VAN"
-    BUS = "BUS"
-    CAR = "CAR"
-    TRAILER = "TRAILER"
+from app.core.enums import VehicleStatus, VehicleType
 
 class Vehicle(Base, TimestampMixin):
     __tablename__ = "vehicles"
@@ -32,28 +21,20 @@ class Vehicle(Base, TimestampMixin):
         nullable=False,
         index=True
     )
-    make: Mapped[str] = mapped_column(
-        String(50),
+    vehicle_name: Mapped[str] = mapped_column(
+        String(100),
         nullable=False
     )
-    model: Mapped[str] = mapped_column(
-        String(50),
+    vehicle_model: Mapped[str] = mapped_column(
+        String(100),
         nullable=False
     )
-    year: Mapped[int] = mapped_column(
-        Integer(),
-        nullable=False
-    )
-    type: Mapped[VehicleType] = mapped_column(
-        Enum(VehicleType, name="vehicletype"),
-        nullable=False
-    )
-    status: Mapped[VehicleStatus] = mapped_column(
-        Enum(VehicleStatus, name="vehiclestatus"),
+    vehicle_type: Mapped[VehicleType] = mapped_column(
+        SQLEnum(VehicleType, name="vehicletype_enum"),
         nullable=False,
         index=True
     )
-    capacity: Mapped[float] = mapped_column(
+    maximum_load_capacity: Mapped[float] = mapped_column(
         Float(),
         nullable=False
     )
@@ -61,10 +42,14 @@ class Vehicle(Base, TimestampMixin):
         Float(),
         nullable=False
     )
-
-    __table_args__ = (
-        CheckConstraint("capacity > 0", name="check_vehicle_capacity_positive"),
-        CheckConstraint("odometer >= 0", name="check_vehicle_odometer_non_negative"),
+    acquisition_cost: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False
+    )
+    status: Mapped[VehicleStatus] = mapped_column(
+        SQLEnum(VehicleStatus, name="vehiclestatus_enum"),
+        nullable=False,
+        index=True
     )
 
     # Relationships
