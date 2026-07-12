@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppLayout, StatusPill } from "@/components/AppLayout";
 import { actions, useDB } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/maintenance")({
   head: () => ({ meta: [{ title: "Maintenance Logs — TransitOps" }] }),
@@ -12,7 +13,7 @@ function MaintenancePage() {
   const vehicles = useDB((d) => d.vehicles);
   const maintenance = useDB((d) => d.maintenance);
   const [form, setForm] = useState({
-    vehicleId: vehicles[0]?.id ?? "",
+    vehicleId: "",
     type: "Oil Change",
     cost: 200,
     date: new Date().toISOString().slice(0, 10),
@@ -51,12 +52,18 @@ function MaintenancePage() {
                 className="space-y-4"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  if (!form.vehicleId) {
+                    toast.error("Please select a vehicle to log service for.");
+                    return;
+                  }
                   actions.addMaintenance(form);
-                  setForm({ ...form, cost: 0, notes: "" });
+                  toast.success("Service record added successfully!");
+                  setForm({ ...form, vehicleId: "", cost: 0, notes: "" });
                 }}
               >
                 <F label="Vehicle">
                   <select className="input" value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })} required>
+                    <option value="">Select vehicle...</option>
                     {vehicles.map((v) => (
                       <option key={v.id} value={v.id}>
                         {v.name} ({v.registration}) — {v.status}
@@ -133,7 +140,10 @@ function MaintenancePage() {
                       <div className="col-span-1 flex justify-end">
                         {m.status === "Active" && (
                           <button
-                            onClick={() => actions.closeMaintenance(m.id)}
+                            onClick={() => {
+                              actions.closeMaintenance(m.id);
+                              toast.success("Service record marked as completed.");
+                            }}
                             className="text-[11px] font-bold uppercase tracking-wider text-primary hover:underline"
                           >
                             Close →

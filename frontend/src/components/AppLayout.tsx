@@ -81,7 +81,7 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
       </header>
 
       <main className="md:ml-[240px] pt-[64px] pb-24 md:pb-8 min-h-screen">
-        <div className="p-4 md:p-6 max-w-[1400px] mx-auto">{children}</div>
+        <div className="p-4 md:p-6 max-w-[1400px] mx-auto animate-page-entry">{children}</div>
       </main>
 
       <nav className="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center bg-surface-container border-t border-outline-variant h-16 md:hidden">

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppLayout, StatusPill } from "@/components/AppLayout";
 import { actions, useDB } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/trips")({
   head: () => ({ meta: [{ title: "Trip Dispatcher — TransitOps" }] }),
@@ -69,10 +70,11 @@ function TripsPage() {
                   revenue: form.revenue,
                 });
                 actions.dispatchTrip(trip.id);
-                setMsg(`Dispatched TR-${trip.id.slice(0, 5).toUpperCase()}`);
+                toast.success(`Dispatched Trip TR-${trip.id.slice(0, 5).toUpperCase()}`);
                 setForm({ ...form, vehicleId: "", driverId: "", cargoWeight: 100 });
               } catch (err) {
                 setError((err as Error).message);
+                toast.error((err as Error).message);
               }
             }}
           >
@@ -175,13 +177,19 @@ function TripsPage() {
                       {t.status === "Dispatched" && (
                         <>
                           <button
-                            onClick={() => actions.completeTrip(t.id, (v?.odometer ?? 0) + t.distance, t.distance / 8)}
+                            onClick={() => {
+                              actions.completeTrip(t.id, (v?.odometer ?? 0) + t.distance, t.distance / 8);
+                              toast.success(`Trip TR-${t.id.slice(0, 5).toUpperCase()} completed successfully!`);
+                            }}
                             className="text-[11px] px-3 py-1 rounded border border-green-500/40 text-green-400 hover:bg-green-500/10 font-bold uppercase tracking-wider"
                           >
                             Complete
                           </button>
                           <button
-                            onClick={() => actions.cancelTrip(t.id)}
+                            onClick={() => {
+                              actions.cancelTrip(t.id);
+                              toast.warning(`Trip TR-${t.id.slice(0, 5).toUpperCase()} cancelled.`);
+                            }}
                             className="text-[11px] px-3 py-1 rounded border border-error/40 text-error hover:bg-error/10 font-bold uppercase tracking-wider"
                           >
                             Cancel

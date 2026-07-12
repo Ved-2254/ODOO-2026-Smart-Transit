@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppLayout, StatusPill } from "@/components/AppLayout";
 import { actions, useDB, type Vehicle, type VehicleStatus } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/fleet")({
   head: () => ({ meta: [{ title: "Fleet Registry — TransitOps" }] }),
@@ -75,7 +76,7 @@ function FleetPage() {
                   setEditing(v);
                   setOpen(true);
                 }}
-                className={`group cursor-pointer bg-surface-container border border-outline-variant rounded-lg overflow-hidden transition-all hover:border-primary/50 hover:bg-surface-container-high ${
+                className={`group hover-card cursor-pointer bg-surface-container border border-outline-variant rounded-lg overflow-hidden transition-all hover:bg-surface-container-high ${
                   v.status === "Retired" ? "opacity-60 grayscale hover:opacity-100 hover:grayscale-0" : ""
                 }`}
               >
@@ -202,11 +203,17 @@ function VehicleModal({
             e.preventDefault();
             setError(null);
             try {
-              if (vehicle) actions.updateVehicle(vehicle.id, form);
-              else actions.addVehicle(form);
+              if (vehicle) {
+                actions.updateVehicle(vehicle.id, form);
+                toast.success(`Vehicle ${form.name} updated successfully!`);
+              } else {
+                actions.addVehicle(form);
+                toast.success(`Vehicle ${form.name} registered successfully!`);
+              }
               onClose();
             } catch (err) {
               setError((err as Error).message);
+              toast.error((err as Error).message);
             }
           }}
         >
@@ -295,6 +302,7 @@ function VehicleModal({
                 type="button"
                 onClick={() => {
                   actions.deleteVehicle(vehicle.id);
+                  toast.warning(`Vehicle ${vehicle.name} deleted.`);
                   onClose();
                 }}
                 className="px-4 py-2 border border-error/40 text-error rounded text-sm hover:bg-error/10"
