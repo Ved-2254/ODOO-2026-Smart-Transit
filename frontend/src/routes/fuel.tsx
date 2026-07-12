@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { actions, useDB } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/fuel")({
   head: () => ({ meta: [{ title: "Fuel & Expenses — TransitOps" }] }),
@@ -15,7 +16,7 @@ function FuelPage() {
   const trips = useDB((d) => d.trips);
 
   const [fuelForm, setFuelForm] = useState({
-    vehicleId: vehicles[0]?.id ?? "",
+    vehicleId: "",
     liters: 0,
     cost: 0,
     date: new Date().toISOString().slice(0, 10),
@@ -55,13 +56,18 @@ function FuelPage() {
               className="grid grid-cols-1 md:grid-cols-5 gap-3"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (!fuelForm.vehicleId) return;
+                if (!fuelForm.vehicleId) {
+                  toast.error("Please select a vehicle to log fuel.");
+                  return;
+                }
                 actions.addFuel(fuelForm);
-                setFuelForm({ ...fuelForm, liters: 0, cost: 0, station: "" });
+                toast.success("Fuel log added successfully!");
+                setFuelForm({ ...fuelForm, vehicleId: "", liters: 0, cost: 0, station: "" });
               }}
             >
               <F label="Vehicle">
                 <select className="input" value={fuelForm.vehicleId} onChange={(e) => setFuelForm({ ...fuelForm, vehicleId: e.target.value })} required>
+                  <option value="">Select vehicle...</option>
                   {vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.name}
@@ -128,6 +134,7 @@ function FuelPage() {
                   date: expForm.date,
                   tripId: expForm.tripId || undefined,
                 });
+                toast.success("Expense logged successfully!");
                 setExpForm({ ...expForm, amount: 0, description: "" });
               }}
             >

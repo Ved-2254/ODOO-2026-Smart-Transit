@@ -3,8 +3,8 @@ from typing import List, Union
 from dotenv import load_dotenv
 from pydantic import BaseModel, field_validator
 
-# Explicitly load .env file
-load_dotenv()
+# Explicitly load .env file, overriding any existing shell environment variables
+load_dotenv(override=True)
 
 class Settings(BaseModel):
     PROJECT_NAME: str = "TransitOps API"

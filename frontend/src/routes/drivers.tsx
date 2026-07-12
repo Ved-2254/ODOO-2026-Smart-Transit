@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppLayout, StatusPill } from "@/components/AppLayout";
 import { actions, useDB, type Driver, type DriverStatus } from "@/lib/store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/drivers")({
   head: () => ({ meta: [{ title: "Driver Management — TransitOps" }] }),
@@ -57,7 +58,7 @@ function DriversPage() {
                   setEditing(d);
                   setOpen(true);
                 }}
-                className={`cursor-pointer bg-surface-container border border-outline-variant p-4 rounded-lg space-y-4 transition-all hover:border-primary/50 ${
+                className={`hover-card cursor-pointer bg-surface-container border border-outline-variant p-4 rounded-lg space-y-4 transition-all ${
                   d.status === "Suspended" ? "border-l-4 border-l-error" : ""
                 }`}
               >
@@ -164,11 +165,17 @@ function DriverModal({ driver, onClose }: { driver: Driver | null; onClose: () =
             e.preventDefault();
             setError(null);
             try {
-              if (driver) actions.updateDriver(driver.id, form);
-              else actions.addDriver(form);
+              if (driver) {
+                actions.updateDriver(driver.id, form);
+                toast.success(`Driver ${form.name} updated successfully!`);
+              } else {
+                actions.addDriver(form);
+                toast.success(`Driver ${form.name} registered successfully!`);
+              }
               onClose();
             } catch (err) {
               setError((err as Error).message);
+              toast.error((err as Error).message);
             }
           }}
         >
@@ -215,6 +222,7 @@ function DriverModal({ driver, onClose }: { driver: Driver | null; onClose: () =
                 type="button"
                 onClick={() => {
                   actions.deleteDriver(driver.id);
+                  toast.warning(`Driver ${driver.name} deleted.`);
                   onClose();
                 }}
                 className="px-4 py-2 border border-error/40 text-error rounded text-sm hover:bg-error/10"
