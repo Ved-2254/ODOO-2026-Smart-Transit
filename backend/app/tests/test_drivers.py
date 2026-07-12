@@ -176,7 +176,8 @@ def test_filter_drivers(tokens, valid_driver_payload):
     payload_a["license_category"] = "HMV"
     payload_a["status"] = "AVAILABLE"
     payload_a["safety_score"] = 90
-    client.post("/api/v1/drivers/", json=payload_a, headers=headers)
+    res_a = client.post("/api/v1/drivers/", json=payload_a, headers=headers)
+    assert res_a.status_code == 201
     
     # Create driver B (LMV, SUSPENDED, safety=60)
     payload_b = valid_driver_payload.copy()
@@ -184,22 +185,23 @@ def test_filter_drivers(tokens, valid_driver_payload):
     payload_b["license_category"] = "LMV"
     payload_b["status"] = "SUSPENDED"
     payload_b["safety_score"] = 60
-    client.post("/api/v1/drivers/", json=payload_b, headers=headers)
+    res_b = client.post("/api/v1/drivers/", json=payload_b, headers=headers)
+    assert res_b.status_code == 201
     
     # Filter by status
-    res_status = client.get("/api/v1/drivers/?status=SUSPENDED", headers=headers)
+    res_status = client.get("/api/v1/drivers/?status=SUSPENDED&limit=100", headers=headers)
     assert res_status.status_code == 200
     assert any(x["license_number"] == payload_b["license_number"] for x in res_status.json()["items"])
     assert not any(x["license_number"] == payload_a["license_number"] for x in res_status.json()["items"])
     
     # Filter by license category
-    res_cat = client.get("/api/v1/drivers/?license_category=HMV", headers=headers)
+    res_cat = client.get("/api/v1/drivers/?license_category=HMV&limit=100", headers=headers)
     assert res_cat.status_code == 200
     assert any(x["license_number"] == payload_a["license_number"] for x in res_cat.json()["items"])
     assert not any(x["license_number"] == payload_b["license_number"] for x in res_cat.json()["items"])
 
     # Filter by safety score min
-    res_safety = client.get("/api/v1/drivers/?safety_score_min=75", headers=headers)
+    res_safety = client.get("/api/v1/drivers/?safety_score_min=75&limit=100", headers=headers)
     assert res_safety.status_code == 200
     assert any(x["license_number"] == payload_a["license_number"] for x in res_safety.json()["items"])
     assert not any(x["license_number"] == payload_b["license_number"] for x in res_safety.json()["items"])

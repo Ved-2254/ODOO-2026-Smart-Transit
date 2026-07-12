@@ -118,8 +118,8 @@ def test_get_drivers_authorized_roles(tokens):
     assert response.status_code == 200
 
 def test_get_drivers_unauthorized_roles(tokens):
-    # Financial Analyst
-    headers = {"Authorization": f"Bearer {tokens['Financial Analyst']}"}
+    # Driver
+    headers = {"Authorization": f"Bearer {tokens['Driver']}"}
     response = client.get("/api/v1/drivers", headers=headers)
     assert response.status_code == 403
 

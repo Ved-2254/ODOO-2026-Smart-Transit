@@ -19,37 +19,46 @@ class FuelLog(Base, TimestampMixin):
         ForeignKey("vehicles.id", ondelete="CASCADE"),
         nullable=False
     )
+    trip_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("trips.id", ondelete="SET NULL"),
+        nullable=True
+    )
     driver_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("drivers.id", ondelete="SET NULL"),
         nullable=True
     )
-    fuel_quantity: Mapped[float] = mapped_column(
-        Float(),
-        nullable=False
-    )
-    price_per_unit: Mapped[float] = mapped_column(
-        Float(),
-        nullable=False
-    )
-    odometer_at_fill: Mapped[float] = mapped_column(
-        Float(),
-        nullable=False
-    )
-    fill_date: Mapped[datetime] = mapped_column(
+    fuel_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
+        nullable=False
+    )
+    liters: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False
+    )
+    cost: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False
+    )
+    odometer: Mapped[float] = mapped_column(
+        Float(),
         nullable=False
     )
 
     __table_args__ = (
-        CheckConstraint("fuel_quantity >= 0", name="check_fuel_quantity_non_negative"),
-        CheckConstraint("price_per_unit >= 0", name="check_fuel_price_non_negative"),
-        CheckConstraint("odometer_at_fill >= 0", name="check_fuel_odometer_non_negative"),
+        CheckConstraint("liters > 0", name="check_fuel_liters_positive"),
+        CheckConstraint("cost >= 0", name="check_fuel_cost_non_negative"),
+        CheckConstraint("odometer >= 0", name="check_fuel_odometer_non_negative"),
     )
 
     # Relationships
     vehicle: Mapped["Vehicle"] = relationship(
         "Vehicle",
+        back_populates="fuel_logs"
+    )
+    trip: Mapped[Optional["Trip"]] = relationship(
+        "Trip",
         back_populates="fuel_logs"
     )
     driver: Mapped[Optional["Driver"]] = relationship(

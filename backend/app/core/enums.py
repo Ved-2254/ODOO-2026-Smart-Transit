@@ -27,3 +27,22 @@ class LicenseCategory(str, enum.Enum):
     Transport = "Transport"
     Heavy_Transport = "Heavy Transport"
     Other = "Other"
+
+class TripStatus(str, enum.Enum):
+    DRAFT = "DRAFT"
+    DISPATCHED = "DISPATCHED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+class MaintenanceStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+
+class ExpenseType(str, enum.Enum):
+    FUEL = "FUEL"
+    MAINTENANCE = "MAINTENANCE"
+    TOLL = "TOLL"
+    PARKING = "PARKING"
+    SALARY = "SALARY"
+    INSURANCE = "INSURANCE"
+    OTHER = "OTHER"

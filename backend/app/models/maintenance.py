@@ -1,16 +1,10 @@
-import enum
 import uuid
-from datetime import datetime
-from sqlalchemy import CheckConstraint, DateTime, Enum, Float, ForeignKey, String
+from datetime import date
+from sqlalchemy import CheckConstraint, Date, Enum as SQLEnum, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base, TimestampMixin
-
-class MaintenanceStatus(str, enum.Enum):
-    SCHEDULED = "SCHEDULED"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
+from app.core.enums import MaintenanceStatus
 
 class MaintenanceLog(Base, TimestampMixin):
     __tablename__ = "maintenance_logs"
@@ -25,21 +19,30 @@ class MaintenanceLog(Base, TimestampMixin):
         ForeignKey("vehicles.id", ondelete="CASCADE"),
         nullable=False
     )
+    maintenance_type: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
+    )
     description: Mapped[str] = mapped_column(
         String(255),
         nullable=False
+    )
+    start_date: Mapped[date] = mapped_column(
+        Date(),
+        nullable=False
+    )
+    end_date: Mapped[date | None] = mapped_column(
+        Date(),
+        nullable=True
     )
     cost: Mapped[float] = mapped_column(
         Float(),
         nullable=False
     )
     status: Mapped[MaintenanceStatus] = mapped_column(
-        Enum(MaintenanceStatus, name="maintenancestatus"),
-        nullable=False
-    )
-    performed_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False
+        SQLEnum(MaintenanceStatus, name="maintenancestatus_enum"),
+        nullable=False,
+        index=True
     )
 
     __table_args__ = (

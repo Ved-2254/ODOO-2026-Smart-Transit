@@ -1,4 +1,3 @@
-import enum
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -6,14 +5,7 @@ from sqlalchemy import CheckConstraint, DateTime, Enum, Float, ForeignKey, Strin
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base, TimestampMixin
-
-class ExpenseType(str, enum.Enum):
-    FUEL = "FUEL"
-    MAINTENANCE = "MAINTENANCE"
-    TOLL = "TOLL"
-    SALARY = "SALARY"
-    INSURANCE = "INSURANCE"
-    OTHER = "OTHER"
+from app.core.enums import ExpenseType
 
 class Expense(Base, TimestampMixin):
     __tablename__ = "expenses"
@@ -23,10 +15,10 @@ class Expense(Base, TimestampMixin):
         primary_key=True,
         default=uuid.uuid4
     )
-    vehicle_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    vehicle_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("vehicles.id", ondelete="SET NULL"),
-        nullable=True
+        ForeignKey("vehicles.id", ondelete="CASCADE"),
+        nullable=False
     )
     driver_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
@@ -60,7 +52,7 @@ class Expense(Base, TimestampMixin):
     )
 
     # Relationships
-    vehicle: Mapped[Optional["Vehicle"]] = relationship(
+    vehicle: Mapped["Vehicle"] = relationship(
         "Vehicle",
         back_populates="expenses"
     )

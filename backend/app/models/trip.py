@@ -1,17 +1,10 @@
-import enum
 import uuid
-from datetime import datetime
-from typing import List, Optional
-from sqlalchemy import CheckConstraint, DateTime, Enum, Float, ForeignKey, String
+from typing import List
+from sqlalchemy import CheckConstraint, Enum as SQLEnum, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base, TimestampMixin
-
-class TripStatus(str, enum.Enum):
-    SCHEDULED = "SCHEDULED"
-    IN_TRANSIT = "IN_TRANSIT"
-    COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
+from app.core.enums import TripStatus
 
 class Trip(Base, TimestampMixin):
     __tablename__ = "trips"
@@ -20,6 +13,14 @@ class Trip(Base, TimestampMixin):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4
+    )
+    source: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+    destination: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
     )
     vehicle_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -31,39 +32,33 @@ class Trip(Base, TimestampMixin):
         ForeignKey("drivers.id", ondelete="CASCADE"),
         nullable=False
     )
+    cargo_weight: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False
+    )
+    planned_distance: Mapped[float] = mapped_column(
+        Float(),
+        nullable=False
+    )
+    final_odometer: Mapped[float | None] = mapped_column(
+        Float(),
+        nullable=True
+    )
+    fuel_consumed: Mapped[float | None] = mapped_column(
+        Float(),
+        nullable=True
+    )
     status: Mapped[TripStatus] = mapped_column(
-        Enum(TripStatus, name="tripstatus"),
+        SQLEnum(TripStatus, name="tripstatus_enum"),
         nullable=False,
         index=True
-    )
-    start_location: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False
-    )
-    end_location: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False
-    )
-    start_time: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True
-    )
-    end_time: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True
-    )
-    cargo_weight: Mapped[Optional[float]] = mapped_column(
-        Float(),
-        nullable=True
-    )
-    distance: Mapped[Optional[float]] = mapped_column(
-        Float(),
-        nullable=True
     )
 
     __table_args__ = (
         CheckConstraint("cargo_weight >= 0", name="check_trip_cargo_weight_non_negative"),
-        CheckConstraint("distance >= 0", name="check_trip_distance_non_negative"),
+        CheckConstraint("planned_distance >= 0", name="check_trip_distance_non_negative"),
+        CheckConstraint("final_odometer >= 0", name="check_trip_final_odometer_non_negative"),
+        CheckConstraint("fuel_consumed >= 0", name="check_trip_fuel_consumed_non_negative"),
     )
 
     # Relationships
@@ -77,5 +72,9 @@ class Trip(Base, TimestampMixin):
     )
     expenses: Mapped[List["Expense"]] = relationship(
         "Expense",
+        back_populates="trip"
+    )
+    fuel_logs: Mapped[List["FuelLog"]] = relationship(
+        "FuelLog",
         back_populates="trip"
     )

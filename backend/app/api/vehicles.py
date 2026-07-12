@@ -5,7 +5,9 @@ from app.db.database import get_db
 from app.core.dependencies import require_roles
 from app.core.enums import VehicleStatus, VehicleType
 from app.schemas.vehicle import VehicleCreate, VehicleUpdate, VehicleResponse, VehicleListResponse
+from app.schemas.cost_summary import VehicleCostSummary
 from app.services import vehicle_service
+from app.services import cost_summary_service
 
 router = APIRouter(prefix="/api/v1/vehicles", tags=["vehicles"])
 
@@ -69,6 +71,15 @@ def list_vehicles(
         limit=limit,
         total=total
     )
+
+@router.get("/{vehicle_id}/cost-summary", response_model=VehicleCostSummary)
+def get_vehicle_cost_summary(
+    vehicle_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _ = read_guard
+):
+    """Get operational cost summary for a vehicle. Allowed roles: Fleet Manager, Admin, Safety Officer, Financial Analyst."""
+    return cost_summary_service.get_vehicle_cost_summary(db, vehicle_id)
 
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
 def get_vehicle(
