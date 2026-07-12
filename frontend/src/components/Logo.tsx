@@ -1,8 +1,8 @@
-import logoAsset from "@/assets/transitops-logo.png.asset.json";
+import logoAsset from "@/assets/logo.png";
 
 export function Logo({
   className = "",
-  size = 32,
+  size = 40,
   showWordmark = false,
 }: {
   className?: string;
@@ -12,7 +12,7 @@ export function Logo({
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <img
-        src={logoAsset.url}
+        src={logoAsset}
         alt="TransitOps logo"
         width={size}
         height={size}
